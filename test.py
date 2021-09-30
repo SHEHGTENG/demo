@@ -1,38 +1,35 @@
-# Connect to the Vehicle (in this case a simulator running the same computer)
-vehicle = connect('tcp:127.0.0.1:5760', wait_ready=True)
+from dronekit import connect, VehicleMode, LocationGlobalRelative,APIException
+from pymavlink import mavutil # Needed for command message definitions
+import time
+import socket
+import exceptions
+import math
+import argparse 
 
-def arm_and_takeoff(aTargetAltitude):
-    """
-    Arms vehicle and fly to aTargetAltitude.
-    """
-
-    print "Basic pre-arm checks"
-    # Don't try to arm until autopilot is ready
-    while not vehicle.is_armable:
-        print " Waiting for vehicle to initialise..."
+def connectMYCopter():
+    parser = argparse.ArgumentParser(description='Control Copter and send commands in GUIDED mode ')
+    parser.add_argument('--connect')
+    args = parser.parse_args()   
+    
+    connection_string = args.connect
+    baud_rate = 57600
+    
+    vehicle = connect(connection_string,baud=baud_rate,wait_ready=True)
+    return vehicle
+    
+def arm():
+    while vehicle.is _armable==False:
+        print(" Waiting for arming...")
         time.sleep(1)
-
-    print "Arming motors"
-    # Copter should arm in GUIDED mode
-    vehicle.mode    = VehicleMode("GUIDED")
-    vehicle.armed   = True
-
-    # Confirm vehicle armed before attempting to take off
-    while not vehicle.armed:
-        print " Waiting for arming..."
+    print("Taking off!")
+    
+    vehicle.armed=True
+    while vehicle.armed==False:
+        print(" Waiting for arming...")
         time.sleep(1)
+        
+     return None
 
-    print "Taking off!"
-    vehicle.simple_takeoff(aTargetAltitude) # Take off to target altitude
-
-    # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command
-    #  after Vehicle.simple_takeoff will execute immediately).
-    while True:
-        print " Altitude: ", vehicle.location.global_relative_frame.alt
-        #Break and return from function just below target altitude.
-        if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95:
-            print "Reached target altitude"
-            break
-        time.sleep(1)
-
-arm_and_takeoff(20)
+vehicle = connectMYCopter()
+arm()
+print("end")
